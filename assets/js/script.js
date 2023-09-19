@@ -2,17 +2,36 @@ var APIkey = "d9870c22d2eeb8fb71f680ed08effa1b"
 const date = new Date().toLocaleDateString();
 
 var searchFormEl = document.querySelector('#search-form');
+var cityListEl = document.querySelector('.city-list');
+var historyList = [];
 
-function storeHistory(city) {
-    var cityListEl = document.querySelector('.city-list');
-    var listEl = document.createElement('li');
-    listEl.classList.add('city-item');
-    listEl.textContent = city;
+function init() {
+    var storedHistory = JSON.parse(localStorage.getItem("historyObj"));
 
-    listEl.addEventListener('click', handleHistorySubmit);
+    if (storedHistory !== null) {
+        historyList = storedHistory;
+    }
 
-    cityListEl.append(listEl);
+    renderHistory();
+}
 
+function renderHistory() {
+    cityListEl.innerHTML = "";
+    for (var i = 0; i < historyList.length; i++) {
+        var city = historyList[i];
+
+        var listEl = document.createElement('li');
+        listEl.classList.add('city-item');
+        listEl.textContent = city;
+
+        listEl.addEventListener('click', handleHistorySubmit);
+
+        cityListEl.append(listEl);
+    }
+}
+
+function storeHistoryObj() {
+    localStorage.setItem("historyObj", JSON.stringify(historyList));
 }
 
 function printCurrentResults(resultObj) {
@@ -129,8 +148,12 @@ function handleSearchFormSubmit(event) {
     console.error('You need a search input value!');
     return;
   }
-  storeHistory(searchInputVal);
   searchApi(searchInputVal);
+  historyList.push(searchInputVal);
+  searchInputVal.value = "";
+
+  storeHistoryObj();
+  renderHistory();
   
 }
 
@@ -144,3 +167,4 @@ function handleHistorySubmit(event) {
 
 searchFormEl.addEventListener('submit', handleSearchFormSubmit);
 searchApi("Atlanta");
+init();
